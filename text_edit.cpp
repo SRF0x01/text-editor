@@ -1,13 +1,19 @@
-#include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
+#include <iostream>
 
 
+std::vector<char> text;
+
+void insertChar(int position, char c) {
+    text.insert(text.begin() + position, c);
+}
+
+void deleteChar(int position) {
+    text.erase(text.begin() + position);
+}
 
 /*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -33,7 +39,6 @@ void die(const char *s) {
 }
 
 
-struct termios orig_termios;
 void disableRawMode() {
     // tcgetattr sets the terminal to the original settints
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1){
@@ -62,33 +67,21 @@ void enableRawMode() {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) die("tcsetattr");
 }
 
-char editorReadKey() {
-    int nread;
-    char c;
-    char buffer[3]; 
-    ssize_t n = read(STDIN_FILENO, buffer, 3);
-    printf("%d ", n);
-    
-    
-    //while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
-      //  if (nread == -1 && errno != EAGAIN) die("read");
-    //}
-    return c;
-}
+
 /*** input ***/
 
 void editorMoveCursor(char key) {
     switch (key) {
-        case 'a':
+        case 'D':
             E.cx--;
             break;
-        case 'd':
+        case 'C':
             E.cx++;
             break;
-        case 'w':
+        case 'B':
             E.cy--;
             break;
-        case 's':
+        case 'A':
             E.cy++;
             break;
     }
@@ -96,31 +89,32 @@ void editorMoveCursor(char key) {
     fflush(stdout);
 }
 
-/*
-Key	Escape Sequence
-Up Arrow	\033[A
-Down Arrow	\033[B
-Right Arrow	\033[C
-Left Arrow	\033[D
 
-#define CTRL_KEY(k) ((k) & 0x1f)
+char editorReadKey() {
+    char buffer[3];  // To handle multi-byte escape sequences
+    ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer));  // Read up to 3 bytes
 
-
-void editorProcessKeypress() {
-    char c = editorReadKey();
-    switch (c) {
-        case CTRL_KEY('x'):
-        exit(0);
-        break;
-        case '\033[A':
-        case '\033[B':
-        case '\033[C':
-        case '\033[D':
-            editorMoveCursor(c);
-            break;
+    if (n == -1 && errno != EAGAIN) {
+        die("read");
     }
+
+    if (n == 1) {
+        // Single-byte input (e.g., regular keypress like 'a', 'b', etc.)
+        char c = buffer[0];
+        printf("%c",c);
+        editorMoveCursor('C');
+        return buffer[0];
+    } else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[') {
+        // Multi-byte escape sequence (e.g., arrow keys)
+        editorMoveCursor(buffer[2]);
+        return buffer[2];
+        
+        
+    }
+
+    // Default return if unknown input
+    return '\0';
 }
-*/
 
 void refreshScreen(){
     printf("\033[2J"); // clear the screen
@@ -130,10 +124,12 @@ void refreshScreen(){
 int main() {
     enableRawMode();
     refreshScreen(); 
-    while (1) {
-        editorReadKey();
+    while (1) // 24 is the code for cntrl + x1
+    {
+        char c = editorReadKey();
+        if(c == 24) break;
     }
-
+    disableRawMode();
     return 0;
 }
 

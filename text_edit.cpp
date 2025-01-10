@@ -108,6 +108,14 @@ void printEscapeKeys(char k){
     backspace is int 127*/
 }
 
+enum escapeKey {
+    UP_ARROW = 65,
+    RIGHT_ARROW = 67,
+    DOWN_ARROW = 66,
+    LEFT_ARROW = 68,
+    BACKSPACE = 127
+};
+
 char editorReadKey() {
     char buffer[3];  // To handle multi-byte escape sequences
     ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer));  // Read up to 3 bytes
@@ -121,14 +129,13 @@ char editorReadKey() {
         char c = buffer[0];
         printKeys(c);
         
-        //editorMoveCursor('C');
         return buffer[0];
     } else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[') {
         // Multi-byte escape sequence (e.g., arrow keys)
-        int k = buffer[2];
+        char k = buffer[2];
         
-        printEscapeKeys(buffer[2]);
-        //editorMoveCursor(buffer[2]);
+        //printEscapeKeys(buffer[2]);
+
         return buffer[2];
         
         

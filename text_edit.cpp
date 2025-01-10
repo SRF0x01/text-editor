@@ -90,6 +90,24 @@ void editorMoveCursor(char key) {
 }
 
 
+void printKeys(char k){
+    printf("%d\r\n",k);
+    fflush(stdout);
+}
+
+void printEscapeKeys(char k){
+    printf("Escape key %d\r\n",k);
+    fflush(stdout);
+
+    /*Notes:
+    up arrow is 65
+    down arrow is 66
+    left arrow is 68
+    rigth arrow is 67
+
+    backspace is int 127*/
+}
+
 char editorReadKey() {
     char buffer[3];  // To handle multi-byte escape sequences
     ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer));  // Read up to 3 bytes
@@ -101,12 +119,16 @@ char editorReadKey() {
     if (n == 1) {
         // Single-byte input (e.g., regular keypress like 'a', 'b', etc.)
         char c = buffer[0];
-        printf("%c",c);
-        editorMoveCursor('C');
+        printKeys(c);
+        
+        //editorMoveCursor('C');
         return buffer[0];
     } else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[') {
         // Multi-byte escape sequence (e.g., arrow keys)
-        editorMoveCursor(buffer[2]);
+        int k = buffer[2];
+        
+        printEscapeKeys(buffer[2]);
+        //editorMoveCursor(buffer[2]);
         return buffer[2];
         
         
@@ -115,6 +137,7 @@ char editorReadKey() {
     // Default return if unknown input
     return '\0';
 }
+
 
 void refreshScreen(){
     printf("\033[2J"); // clear the screen

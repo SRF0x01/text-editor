@@ -106,13 +106,6 @@ void printEscapeKeys(char k){
     backspace is int 127*/
 }
 
-enum escapeKey {
-    UP_ARROW = 65,
-    RIGHT_ARROW = 67,
-    DOWN_ARROW = 66,
-    LEFT_ARROW = 68,
-    BACKSPACE = 127
-};
 
 char editorReadKey() {
     char buffer[3];  // To handle multi-byte escape sequences
@@ -123,13 +116,11 @@ char editorReadKey() {
     }
 
     if (n == 1) {
-        // This is delete
         if(buffer[0] == '\r'){
             E.cx = 0;
             editorMoveCursor('B');
         }
         if(buffer[0] == 127){
-            // 
             char space = ' ';
             // TODO: fix the issue where a delete requires two keystrokes
             write(STDOUT_FILENO, &space, 1);
@@ -137,7 +128,6 @@ char editorReadKey() {
         } else {
             write(STDOUT_FILENO, &buffer[0], 1);
             editorMoveCursor('C');
-
         }
         return buffer[0];
     } else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[') {
@@ -153,7 +143,7 @@ char editorReadKey() {
 
 void titleCard(){
     E.cy = 3;
-    printf("--- Text Editor (ctrl + x to exit) ---\r\n");
+    printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit) ---\r\n");
     fflush(stdout);
 }
 

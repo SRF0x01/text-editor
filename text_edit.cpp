@@ -153,7 +153,7 @@ char editorReadKey() {
 
 void titleCard(){
     E.cy = 3;
-    printf("--- Text Editor (ctrl + x to exit) %d %d ---\r\n", E.cx, E.cy);
+    printf("--- Text Editor (ctrl + x to exit) ---\r\n");
     fflush(stdout);
 }
 

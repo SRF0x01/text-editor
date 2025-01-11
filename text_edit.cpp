@@ -4,6 +4,11 @@
 #include <vector>
 #include <iostream>
 #include <unistd.h>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
 
 std::vector<char> text;
 
@@ -152,10 +157,28 @@ void refreshScreen(){
     write(STDOUT_FILENO, "\x1b[2;1H", 7); // set cursor at the top left one down
 }
 
-int main() {
+
+void openFileContents(char* file_name){
+    ifstream file(file_name);
+    if (!file.is_open()) {            // Check if the file was opened successfully
+        cerr << "Failed to open file.\n";
+    }
+    string line;
+    while (std::getline(file, line)) { // Read line by line
+        std::cout << line << '\n';    // Print each line
+    }
+    file.close();
+    E.cx = 1;
+    E.cy = 3;
+    
+}
+
+int main(int argc, char* argv[]) {
     enableRawMode();
     refreshScreen();
     titleCard(); 
+
+    openFileContents(argv[1]);
     while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();

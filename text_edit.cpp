@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <vector>
 #include <iostream>
+#include <unistd.h>
 
 
 std::vector<char> text;
@@ -69,26 +70,25 @@ void enableRawMode() {
 
 
 /*** input ***/
-
 void editorMoveCursor(char key) {
     switch (key) {
-        case 'D':
-            E.cx--;
+        case 'A': // Up arrow
+            if (E.cy > 0) E.cy--;
             break;
-        case 'C':
-            E.cx++;
-            break;
-        case 'B':
-            E.cy--;
-            break;
-        case 'A':
+        case 'B': // Down arrow
             E.cy++;
             break;
+        case 'C': // Right arrow
+            E.cx++;
+            break;
+        case 'D': // Left arrow
+            if (E.cx > 0) E.cx--;
+            break;
     }
-    printf("\033[%d;%dH", E.cy, E.cx); // ANSI escape code to move cursor
-    fflush(stdout);
+    char buffer[32];
+    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + 1, E.cx + 1); // Create the escape sequence
+    write(STDOUT_FILENO, buffer, length); // Write the escape sequence to stdout
 }
-
 
 void printKeys(char k){
     printf("%d\r\n",k);
@@ -125,36 +125,38 @@ char editorReadKey() {
     }
 
     if (n == 1) {
-        // Single-byte input (e.g., regular keypress like 'a', 'b', etc.)
-        char c = buffer[0];
-        printKeys(c);
-        
+        // This is delete
+        if(buffer[0] == 127){
+            char space = ' ';
+            //editorMoveCursor('D');
+            write(STDOUT_FILENO, &space, 1);
+            editorMoveCursor('D');
+        } else {
+            write(STDOUT_FILENO, &buffer[0], 1);
+            editorMoveCursor('C');
+
+        }
         return buffer[0];
     } else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[') {
         // Multi-byte escape sequence (e.g., arrow keys)
-        char k = buffer[2];
-        
         //printEscapeKeys(buffer[2]);
-
+        editorMoveCursor(buffer[2]);
         return buffer[2];
-        
-        
     }
 
     // Default return if unknown input
     return '\0';
 }
 
-
 void refreshScreen(){
-    printf("\033[2J"); // clear the screen
+    write(STDOUT_FILENO, "\x1b[2J", 4); // clear the screen with J
+    write(STDOUT_FILENO, "\x1b[H", 3); // reposition the cursor with H
 }
-
 
 int main() {
     enableRawMode();
     refreshScreen(); 
-    while (1) // 24 is the code for cntrl + x1
+    while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();
         if(c == 24) break;

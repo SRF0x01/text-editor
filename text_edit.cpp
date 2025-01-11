@@ -25,8 +25,6 @@ void deleteChar(int position) {
 // tooling to get the size of the terminal
 struct editorConfig {
     int cx, cy;
-    int screenrows;
-    int screencols;
     struct termios orig_termios;
 };
 struct editorConfig E; // global variable containing the state of the terminal
@@ -86,7 +84,7 @@ void editorMoveCursor(char key) {
             break;
     }
     char buffer[32];
-    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + 1, E.cx + 1); // Create the escape sequence
+    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + 0, E.cx + 0); // Create the escape sequence
     write(STDOUT_FILENO, buffer, length); // Write the escape sequence to stdout
 }
 
@@ -127,8 +125,9 @@ char editorReadKey() {
     if (n == 1) {
         // This is delete
         if(buffer[0] == 127){
+            // 
             char space = ' ';
-            //editorMoveCursor('D');
+            // TODO: fix the issue where a delete requires two keystrokes
             write(STDOUT_FILENO, &space, 1);
             editorMoveCursor('D');
         } else {
@@ -148,14 +147,22 @@ char editorReadKey() {
     return '\0';
 }
 
+void titleCard(){
+    E.cx = 0;
+    E.cy = 1;
+    printf("--- Text Editor (ctrl + x to exit) %d %d ---\r\n", E.cx, E.cy);
+    fflush(stdout);
+}
+
 void refreshScreen(){
     write(STDOUT_FILENO, "\x1b[2J", 4); // clear the screen with J
-    write(STDOUT_FILENO, "\x1b[H", 3); // reposition the cursor with H
+    write(STDOUT_FILENO, "\x1b[2;1H", 7); // set cursor at the top left one down
 }
 
 int main() {
     enableRawMode();
-    refreshScreen(); 
+    refreshScreen();
+    titleCard(); 
     while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();
@@ -165,10 +172,3 @@ int main() {
     return 0;
 }
 
-
-
-/* Notes
-
-crtl + x is code 24
-
-*/

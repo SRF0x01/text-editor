@@ -5,7 +5,6 @@
 #include <iostream>
 #include <unistd.h>
 
-
 std::vector<char> text;
 
 void insertChar(int position, char c) {
@@ -80,7 +79,7 @@ void editorMoveCursor(char key) {
             E.cx++;
             break;
         case 'D': // Left arrow
-            if (E.cx > 0) E.cx--;
+            if (E.cx > 1) E.cx--;
             break;
     }
     char buffer[32];
@@ -142,6 +141,7 @@ char editorReadKey() {
 }
 
 void titleCard(){
+    E.cx = 1;
     E.cy = 3;
     printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit) ---\r\n");
     fflush(stdout);

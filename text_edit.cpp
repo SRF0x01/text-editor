@@ -124,6 +124,10 @@ char editorReadKey() {
 
     if (n == 1) {
         // This is delete
+        if(buffer[0] == '\r'){
+            E.cx = 0;
+            editorMoveCursor('B');
+        }
         if(buffer[0] == 127){
             // 
             char space = ' ';
@@ -148,8 +152,7 @@ char editorReadKey() {
 }
 
 void titleCard(){
-    E.cx = 0;
-    E.cy = 1;
+    E.cy = 3;
     printf("--- Text Editor (ctrl + x to exit) %d %d ---\r\n", E.cx, E.cy);
     fflush(stdout);
 }

@@ -10,14 +10,23 @@
 using namespace std;
 
 
-std::vector<char> text;
+std::vector<char> text_vector;
 
 void insertChar(int position, char c) {
-    text.insert(text.begin() + position, c);
+    text_vector.insert(text_vector.begin() + position, c);
 }
 
 void deleteChar(int position) {
-    text.erase(text.begin() + position);
+    text_vector.erase(text_vector.begin() + position);
+}
+
+void appendChar(char c){
+    text_vector.push_back(c);
+}
+
+void appendString(const string& str) {
+     // Appends all characters from the string to the vector
+    text_vector.insert(text_vector.end(), str.begin(), str.end());
 }
 
 /*** defines ***/
@@ -157,20 +166,24 @@ void refreshScreen(){
     write(STDOUT_FILENO, "\x1b[2;1H", 7); // set cursor at the top left one down
 }
 
+void resetCursor(){
+    write(STDOUT_FILENO, "\x1b[3;1H", 7); // set cursor at the top left two down
+}
 
-void openFileContents(char* file_name){
+
+int openFileContents(char* file_name){
     ifstream file(file_name);
     if (!file.is_open()) {            // Check if the file was opened successfully
         cerr << "Failed to open file.\n";
+        return 1;
     }
     string line;
     while (std::getline(file, line)) { // Read line by line
+        appendString(line);
         std::cout << line << '\n';    // Print each line
     }
     file.close();
-    E.cx = 1;
-    E.cy = 3;
-    
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -178,13 +191,22 @@ int main(int argc, char* argv[]) {
     refreshScreen();
     titleCard(); 
 
-    openFileContents(argv[1]);
+    if(openFileContents(argv[1])){
+        return 1;
+    }
+    resetCursor();
+
     while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();
         if(c == 24) break;
     }
+    
+    refreshScreen();
     disableRawMode();
+    for(int i = 0; i < text_vector.size(); i++){
+        printf("%c",text_vector[i]);
+    }
     return 0;
 }
 

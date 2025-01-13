@@ -25,7 +25,12 @@ const int TOP_LEFT_Y = 3;
 vector<char> text_vector;
 vector<string> string_vec;
 
-int stringVecX();
+
+// unfinished
+int stringVecX(int y){
+    int vec_size = string_vec.size();
+    int line_length = string_vec[y].size();
+}
 
 int stringVecY();
 

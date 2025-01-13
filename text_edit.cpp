@@ -9,8 +9,25 @@
 
 using namespace std;
 
+/** Global vars **/
+// tooling to get the size of the terminal
+struct editorConfig {
+    int cx, cy;
+    struct termios orig_termios;
+};
+struct editorConfig E; // global variable containing the state of the terminal
 
-std::vector<char> text_vector;
+// global variable that sets the top left of a page
+const int TOP_LEFT_X = 0;
+const int TOP_LEFT_Y = 3;
+
+// text data types
+vector<char> text_vector;
+vector<string> string_vec;
+
+int stringVecX();
+
+int stringVecY();
 
 void insertChar(int position, char c) {
     text_vector.insert(text_vector.begin() + position, c);
@@ -29,18 +46,20 @@ void appendString(const string& str) {
     text_vector.insert(text_vector.end(), str.begin(), str.end());
 }
 
-/*** defines ***/
-#define CTRL_KEY(k) ((k) & 0x1f)
+void cursorLineation(){
+    int position;
+    if(E.cx == 0){
+        position = (E.cy - TOP_LEFT_Y);
+    }
+    position = (E.cx - TOP_LEFT_X) * (E.cy - TOP_LEFT_Y);
+
+    //char buffer[20];  // A buffer large enough to hold the number (including the null terminator)
+    //int length = snprintf(buffer, sizeof(buffer), "%d", position);  // Format the integer as a string
+    //write(STDOUT_FILENO, buffer, length);  // Write the formatted string to stdout
+}
 
 
-/*** data ***/
 
-// tooling to get the size of the terminal
-struct editorConfig {
-    int cx, cy;
-    struct termios orig_termios;
-};
-struct editorConfig E; // global variable containing the state of the terminal
 
 void die(const char *s) {
     write(STDOUT_FILENO, "\x1b[2J", 4); // clear the screen with J
@@ -84,7 +103,7 @@ void enableRawMode() {
 void editorMoveCursor(char key) {
     switch (key) {
         case 'A': // Up arrow
-            if (E.cy > 0) E.cy--;
+            if (E.cy > TOP_LEFT_Y) E.cy--;
             break;
         case 'B': // Down arrow
             E.cy++;
@@ -93,12 +112,15 @@ void editorMoveCursor(char key) {
             E.cx++;
             break;
         case 'D': // Left arrow
-            if (E.cx > 1) E.cx--;
+            if (E.cx > TOP_LEFT_X) E.cx--;
             break;
     }
     char buffer[32];
     int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + 0, E.cx + 0); // Create the escape sequence
     write(STDOUT_FILENO, buffer, length); // Write the escape sequence to stdout
+
+    // for dev
+    cursorLineation();
 }
 
 void printKeys(char k){
@@ -157,7 +179,7 @@ char editorReadKey() {
 void titleCard(){
     E.cx = 1;
     E.cy = 3;
-    printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit) ---\r\n");
+    printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit)---\r\n");
     fflush(stdout);
 }
 
@@ -166,9 +188,15 @@ void refreshScreen(){
     write(STDOUT_FILENO, "\x1b[2;1H", 7); // set cursor at the top left one down
 }
 
+void clearScreen(){
+    write(STDOUT_FILENO, "\x1b[2J", 4);  // 2J clears the entire screen
+}
+
 void resetCursor(){
     write(STDOUT_FILENO, "\x1b[3;1H", 7); // set cursor at the top left two down
 }
+
+
 
 
 int openFileContents(char* file_name){
@@ -199,6 +227,7 @@ int main(int argc, char* argv[]) {
     while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();
+        
         if(c == 24) break;
     }
     
@@ -210,3 +239,5 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+/*Notes:
+the top left cursor limit with a single line of text is x2 y3*/

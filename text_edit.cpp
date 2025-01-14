@@ -27,14 +27,7 @@ vector<string> string_vec;
 
 
 // unfinished
-int stringVecX(int y){
-    int vecx = string_vec[y].size();
-    return vecx;
-}
 
-int stringVecY(){
-    return string_vec.size();
-}
 
 void insertChar(int position, char c) {
     text_vector.insert(text_vector.begin() + position, c);
@@ -116,7 +109,7 @@ void editorMoveCursor(char key) {
             if(E.cy - TOP_LEFT_Y < string_vec.size()) E.cy++;
             break;
         case 'C': // Right arrow
-            if(E.cx - TOP_LEFT_X < string_vec[E.cy - TOP_LEFT_Y ].size())E.cx++;
+            if(E.cx - TOP_LEFT_X < string_vec[E.cy - TOP_LEFT_Y ].size()) E.cx++;
             break;
         case 'D': // Left arrow
             if (E.cx > TOP_LEFT_X) E.cx--;
@@ -159,6 +152,7 @@ char editorReadKey() {
 
     if (n == 1) {
         if(buffer[0] == '\r'){
+            string_vec.push_back(" ");
             E.cx = 0;
             editorMoveCursor('B');
         }
@@ -217,7 +211,7 @@ int openFileContents(char* file_name){
     string line;
     while (std::getline(file, line)) { // Read line by line
         string_vec.push_back(line);
-        std::cout << line << '\n';    // Print each line
+        std::cout << line << '\r' << '\n';    // Print each line
     }
     string_vec.pop_back();
     file.close();

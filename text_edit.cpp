@@ -28,11 +28,13 @@ vector<string> string_vec;
 
 // unfinished
 int stringVecX(int y){
-    int vec_size = string_vec.size();
-    int line_length = string_vec[y].size();
+    int vecx = string_vec[y].size();
+    return vecx;
 }
 
-int stringVecY();
+int stringVecY(){
+    return string_vec.size();
+}
 
 void insertChar(int position, char c) {
     text_vector.insert(text_vector.begin() + position, c);
@@ -111,10 +113,10 @@ void editorMoveCursor(char key) {
             if (E.cy > TOP_LEFT_Y) E.cy--;
             break;
         case 'B': // Down arrow
-            E.cy++;
+            if(E.cy - TOP_LEFT_Y < string_vec.size()) E.cy++;
             break;
         case 'C': // Right arrow
-            E.cx++;
+            if(E.cx - TOP_LEFT_X < string_vec[E.cy - TOP_LEFT_Y ].size())E.cx++;
             break;
         case 'D': // Left arrow
             if (E.cx > TOP_LEFT_X) E.cx--;
@@ -185,6 +187,8 @@ void titleCard(){
     E.cx = 1;
     E.cy = 3;
     printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit)---\r\n");
+
+    
     fflush(stdout);
 }
 
@@ -212,9 +216,10 @@ int openFileContents(char* file_name){
     }
     string line;
     while (std::getline(file, line)) { // Read line by line
-        appendString(line);
+        string_vec.push_back(line);
         std::cout << line << '\n';    // Print each line
     }
+    string_vec.pop_back();
     file.close();
     return 0;
 }

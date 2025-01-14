@@ -186,7 +186,12 @@ char editorReadKey() {
             // TODO: fix the issue where a delete requires two keystrokes
             write(STDOUT_FILENO, &space, 1);
             editorMoveCursor('D');
-        } else {
+        } else if(string_vec[E.cy].size() == E.cx){
+            string_vec[E.cy].push_back(buffer[0]);
+            write(STDOUT_FILENO, &buffer[0], 1);
+            editorMoveCursor('C');
+        }
+        else {
             write(STDOUT_FILENO, &buffer[0], 1);
             editorMoveCursor('C');
         }
@@ -266,8 +271,8 @@ int main(int argc, char* argv[]) {
     
     refreshScreen();
     disableRawMode();
-    for(int i = 0; i < text_vector.size(); i++){
-        printf("%c",text_vector[i]);
+    for(int i = 0; i < string_vec.size(); i++){
+        printf("%s\r\n",string_vec[i].c_str());
     }
     return 0;
 }

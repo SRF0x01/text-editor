@@ -18,7 +18,7 @@ struct editorConfig {
 struct editorConfig E; // global variable containing the state of the terminal
 
 // global variable that sets the top left of a page
-const int TOP_LEFT_X = 0;
+const int TOP_LEFT_X = 5;
 const int TOP_LEFT_Y = 3;
 
 // text data types
@@ -103,22 +103,45 @@ void enableRawMode() {
 void editorMoveCursor(char key) {
     switch (key) {
         case 'A': // Up arrow
-            if (E.cy > TOP_LEFT_Y) E.cy--;
+            if (E.cy > 0) {
+                E.cy--;
+            }
+            if(string_vec[E.cy].size() < E.cx){
+                E.cx = string_vec[E.cy].size();
+            }
             break;
         case 'B': // Down arrow
-            if(E.cy - TOP_LEFT_Y < string_vec.size()){ 
+            if(E.cy < string_vec.size()){ 
                 E.cy++;
+            }
+            if(string_vec[E.cy].size() < E.cx){
+                E.cx = string_vec[E.cy].size();
             }
             break;
         case 'C': // Right arrow
-            if(E.cx - TOP_LEFT_X < string_vec[E.cy - TOP_LEFT_Y ].size()) E.cx++;
+            if(E.cx < string_vec[E.cy].size()){
+                E.cx++;
+            } else if (E.cx == string_vec[E.cy].size()
+            && E.cy + 1 <= string_vec.size()){
+                E.cx = 0;
+                E.cy++;
+            }
             break;
         case 'D': // Left arrow
-            if (E.cx > TOP_LEFT_X) E.cx--;
+            if (E.cx > 0) {
+                E.cx--;
+            } else if (E.cx == 0
+            && E.cy - 1 >= 0){
+                E.cy--;
+                E.cx = string_vec[E.cy].size();
+            }
             break;
     }
+
+    // add the topleft limits to the display not the actual limits of the verctors
+
     char buffer[32];
-    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + 0, E.cx + 0); // Create the escape sequence
+    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + TOP_LEFT_Y, E.cx + TOP_LEFT_X); // Create the escape sequence
     write(STDOUT_FILENO, buffer, length); // Write the escape sequence to stdout
 
     // for dev
@@ -180,9 +203,7 @@ char editorReadKey() {
 }
 
 void titleCard(){
-    E.cx = 1;
-    E.cy = 3;
-    printf("--- S.T.E 1.0.0-alpha (ctrl + x to exit)---\r\n");
+    printf("    --- S.T.E 1.0.0-alpha (ctrl + x to exit)---\r\n");
 
     
     fflush(stdout);
@@ -198,7 +219,11 @@ void clearScreen(){
 }
 
 void resetCursor(){
-    write(STDOUT_FILENO, "\x1b[3;1H", 7); // set cursor at the top left two down
+    E.cx = 0;
+    E.cy = 0;
+    char buffer[32];
+    int length = snprintf(buffer, sizeof(buffer), "\x1b[%d;%dH", TOP_LEFT_Y, TOP_LEFT_X);
+    write(STDOUT_FILENO, buffer, length);
 }
 
 
@@ -213,7 +238,7 @@ int openFileContents(char* file_name){
     string line;
     while (std::getline(file, line)) { // Read line by line
         string_vec.push_back(line);
-        std::cout << line << '\r' << '\n';    // Print each line
+        std::cout << std::setfill('0') << std::setw(3) << line.size() << " " << line << '\r' << '\n';    // Print each line
     }
     string_vec.pop_back();
     file.close();

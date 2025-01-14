@@ -203,7 +203,7 @@ char editorReadKey() {
 }
 
 void titleCard(){
-    printf("    --- S.T.E 1.0.0-alpha (ctrl + x to exit)---\r\n");
+    printf("------- S.T.E 1.0.0-alpha (ctrl + x to exit) -------\r\n");
 
     
     fflush(stdout);
@@ -236,11 +236,13 @@ int openFileContents(char* file_name){
         return 1;
     }
     string line;
+    int count = 1;
     while (std::getline(file, line)) { // Read line by line
         string_vec.push_back(line);
-        std::cout << std::setfill('0') << std::setw(3) << line.size() << " " << line << '\r' << '\n';    // Print each line
+        cout << std::setfill('0') << std::setw(3) << count++ << " " << line << '\r' << '\n';    // Print each line
     }
-    string_vec.pop_back();
+    cout << std::setfill('0') << std::setw(3) << count++ << " " << line << '\r' << '\n';
+    //string_vec.pop_back();
     file.close();
     return 0;
 }

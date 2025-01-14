@@ -106,7 +106,9 @@ void editorMoveCursor(char key) {
             if (E.cy > TOP_LEFT_Y) E.cy--;
             break;
         case 'B': // Down arrow
-            if(E.cy - TOP_LEFT_Y < string_vec.size()) E.cy++;
+            if(E.cy - TOP_LEFT_Y < string_vec.size()){ 
+                E.cy++;
+            }
             break;
         case 'C': // Right arrow
             if(E.cx - TOP_LEFT_X < string_vec[E.cy - TOP_LEFT_Y ].size()) E.cx++;

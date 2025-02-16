@@ -14,6 +14,8 @@ Compile normaly, pass along a existing filename
 Im just going to do a doubly linked list for each line. Eventually, 
 I should just do a piece table. 
 
+end note: file to head doesnt return the head properly;
+
 
 
 

@@ -62,6 +62,7 @@ public:
         }
         string line;
         TextLine *node = this;
+        
         while (std::getline(file, line))
         { // Read line by line
             //printf("%s\r\n",line.c_str());

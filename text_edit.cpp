@@ -283,19 +283,36 @@ int openFileContents(char *file_name)
     return 0;
 }
 
+// TextLine obj printing
+void printAll(TextLine *head)
+{
+    /*for (int i = 0; i < string_vec.size(); i++)
+    {
+        printf("%s\r\n", string_vec[i].c_str());
+    }
+
+*/
+
+    TextLine *current = head;
+    while (current != nullptr)
+    {
+        printf("%s\r\n",current->getText().c_str());
+        current = current->getNext();
+    }
+}
+
 int main(int argc, char *argv[])
 {
     enableRawMode();
     refreshScreen();
     titleCard();
 
-    // Pointer to head 
-    TextLine* textLine_head = new TextLine();
+    // Pointer to head
+    TextLine *head = new TextLine();
+    head->toTextLine(argv[1]);
 
-    if (openFileContents(argv[1]))
-    {
-        return 1;
-    }
+    
+
     resetCursor();
 
     while (1) // 24 is the code for ctrl + x1
@@ -308,11 +325,6 @@ int main(int argc, char *argv[])
 
     refreshScreen();
     disableRawMode();
-    for (int i = 0; i < string_vec.size(); i++)
-    {
-        printf("%s\r\n", string_vec[i].c_str());
-    }
-
 
     return 0;
 }

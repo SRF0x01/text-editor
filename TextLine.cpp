@@ -19,6 +19,8 @@ private:
 public:
     /* First line is the head of the list, the constructor only contains the next */
     // Constructor
+
+    /* The head will always have the prev point to null*/
     TextLine(string line)
     {
         text_line = line;
@@ -44,28 +46,41 @@ public:
         // if at the tail
         if (next == nullptr)
         {
+
             next = new_obj;
             new_obj->prev = this;
         }
     }
 
-    TextLine *toTextLine(string file_name)
+    void toTextLine(string file_name)
     {
+        // Turns the object this method is calling into the head
         ifstream file(file_name);
         if (!file.is_open())
         { // Check if the file was opened successfully
             cerr << "Failed to open file.\n";
         }
         string line;
-        TextLine *node;
+        TextLine *node = this;
         while (std::getline(file, line))
         { // Read line by line
+            printf("%s\r\n",line.c_str());
+            this->text_line = line;
             node->setNext(line);
         }
 
         file.close();
     }
-    ~TextLine() {}
+
+    TextLine *getNext()
+    {
+        return next;
+    }
+
+    ~TextLine()
+    {
+        delete next; // Recursively delete the next node in the linked list
+    }
 };
 
 /*

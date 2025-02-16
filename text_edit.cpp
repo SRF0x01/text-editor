@@ -292,30 +292,29 @@ void printAll(TextLine *head)
     }
 
 */
-
+    int count = 1;
     TextLine *current = head;
     while (current != nullptr)
     {
-        printf("%s\r\n",current->getText().c_str());
+        cout << std::setfill('0') << std::setw(3) << count++ << " " << current->getText() << '\r' << '\n'; // Print each line
         current = current->getNext();
     }
 }
 
 int main(int argc, char *argv[])
 {
-    enableRawMode();
-    refreshScreen();
-    titleCard();
+    //enableRawMode();
+    //refreshScreen();
+    //titleCard();
 
     // Pointer to head
     TextLine *head = new TextLine();
     head->toTextLine(argv[1]);
+    printAll(head);
 
-    
+    //resetCursor();
 
-    resetCursor();
-
-    while (1) // 24 is the code for ctrl + x1
+    /*while (1) // 24 is the code for ctrl + x1
     {
         char c = editorReadKey();
 
@@ -324,7 +323,7 @@ int main(int argc, char *argv[])
     }
 
     refreshScreen();
-    disableRawMode();
+    disableRawMode();*/
 
     return 0;
 }

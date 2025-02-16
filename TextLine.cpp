@@ -64,7 +64,7 @@ public:
         TextLine *node = this;
         while (std::getline(file, line))
         { // Read line by line
-            printf("%s\r\n",line.c_str());
+            //printf("%s\r\n",line.c_str());
             this->text_line = line;
             node->setNext(line);
         }

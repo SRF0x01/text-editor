@@ -34,6 +34,38 @@ public:
         prev = nullptr;
     }
 
+    TextLine(ifstream &file)
+    {
+        string line;
+        if (!file.is_open())
+        {
+            cerr << "Failed to open file.\n";
+            return;
+        }
+
+        // Read first line into this head node
+        if (getline(file, line))
+        {
+            this->text_line = line;
+            this->next = nullptr;
+            this->prev = nullptr;
+        }
+        else
+        {
+            return; // Empty file case
+        }
+
+        TextLine *current = this; // Keep track of the current node
+
+        // Read and create new nodes for remaining lines
+        while (getline(file, line))
+        {
+            current->next = new TextLine(line);
+            current->next->prev = current;
+            current = current->next; // Move current forward
+        }
+    }
+
     string getText()
     {
         return text_line;
@@ -52,27 +84,7 @@ public:
         }
     }
 
-    void toTextLine(string file_name)
-    {
-        // Turns the object this method is calling into the head
-        ifstream file(file_name);
-        if (!file.is_open())
-        { // Check if the file was opened successfully
-            cerr << "Failed to open file.\n";
-        }
-        string line;
-        TextLine *node = this;
-        
-        while (std::getline(file, line))
-        { // Read line by line
-            //printf("%s\r\n",line.c_str());
-            this->text_line = line;
-            node->setNext(line);
-        }
-
-        file.close();
-    }
-
+    
     TextLine *getNext()
     {
         return next;

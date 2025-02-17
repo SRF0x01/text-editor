@@ -303,16 +303,30 @@ void printAll(TextLine *head)
 
 int main(int argc, char *argv[])
 {
-    //enableRawMode();
-    //refreshScreen();
-    //titleCard();
+    // enableRawMode();
+    // refreshScreen();
+    // titleCard();
 
-    // Pointer to head
-    TextLine *head = new TextLine();
-    head->toTextLine(argv[1]);
-    printAll(head);
+    ifstream file(argv[1]); // Open file
+    if (!file.is_open())
+    {
+        cerr << "Failed to open file.\n";
+        return 1; // Exit if file cannot be opened
+    }
 
-    //resetCursor();
+    // Create the head of the linked list
+    TextLine *head = new TextLine(file);
+    file.close(); // Close the file after reading
+
+    // Print contents
+    TextLine *current = head;
+    while (current)
+    {
+        cout << current->getText() << endl;
+        current = current->getNext();
+    }
+
+    // resetCursor();
 
     /*while (1) // 24 is the code for ctrl + x1
     {

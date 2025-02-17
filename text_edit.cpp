@@ -20,7 +20,7 @@ struct editorConfig
 struct editorConfig E; // global variable containing the state of the terminal
 
 // global variable that sets the top left of a page
-const int TOP_LEFT_X = 0;
+const int TOP_LEFT_X = 1;
 const int TOP_LEFT_Y = 3;
 
 // unfinished
@@ -37,8 +37,10 @@ void appendChar(char c)
 {
 }
 
-void appendString(const string &str)
+void appendLine(TextLine *current)
 {
+    current->setNext("");
+    afterCurrentPrint(current);
 }
 
 void die(const char *s)
@@ -83,67 +85,6 @@ void enableRawMode()
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
         die("tcsetattr");
 }
-
-/*** input ***/
-/*
-void editorMoveCursor(char key)
-{
-    switch (key)
-    {
-    case 'A': // Up arrow
-        if (E.cy > 0)
-        {
-            E.cy--;
-        }
-        if (string_vec[E.cy].size() < E.cx)
-        {
-            E.cx = string_vec[E.cy].size();
-        }
-        break;
-    case 'B': // Down arrow
-        if (E.cy < string_vec.size())
-        {
-            E.cy++;
-        }
-        if (string_vec[E.cy].size() < E.cx)
-        {
-            E.cx = string_vec[E.cy].size();
-        }
-        break;
-    case 'C': // Right arrow
-        if (E.cx < string_vec[E.cy].size())
-        {
-            E.cx++;
-        }
-        else if (E.cx == string_vec[E.cy].size() && E.cy + 1 <= string_vec.size())
-        {
-            E.cx = 0;
-            E.cy++;
-        }
-        break;
-    case 'D': // Left arrow
-        if (E.cx > 0)
-        {
-            E.cx--;
-        }
-        else if (E.cx == 0 && E.cy - 1 >= 0)
-        {
-            E.cy--;
-            E.cx = string_vec[E.cy].size();
-        }
-        break;
-    }
-
-    // add the topleft limits to the display not the actual limits of the verctors
-
-    char buffer[32];
-    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + TOP_LEFT_Y, E.cx + TOP_LEFT_X); // Create the escape sequence
-    write(STDOUT_FILENO, buffer, length);                                                               // Write the escape sequence to stdout
-
-    // for dev
-    cursorLineation();
-}
-*/
 
 void moveCursor(char key)
 {
@@ -196,7 +137,7 @@ void printEscapeKeys(char k)
     backspace is int 127*/
 }
 
-char readKey()
+char readKey(TextLine *current)
 {
     char buffer[3];                                         // To handle multi-byte escape sequences
     ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer)); // Read up to 3 bytes
@@ -210,14 +151,8 @@ char readKey()
     {
         if (buffer[0] == '\r')
         {
-            write(STDOUT_FILENO, "\r\n", 2); // Ensure newline properly moves down
             E.cx = 0;
-            E.cy++;
-
-            // Move the cursor to the correct new line position
-            char buffer[32];
-            int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + TOP_LEFT_Y, TOP_LEFT_X);
-            write(STDOUT_FILENO, buffer, length);
+            moveCursor('B');
         }
         if (buffer[0] == 127)
         {
@@ -274,12 +209,25 @@ void resetCursor()
 // TextLine obj printing
 void printAll(TextLine *head)
 {
-    int count = 1;
     TextLine *current = head;
     while (current)
     {
         cout << current->getText() << '\r' << '\n'; // Print each line
         current = current->getNext();
+    }
+
+    // No need to delete head because it ends as a null pointer
+}
+
+void afterCurrentPrint(TextLine *current)
+{
+    TextLine *walker = current;
+    while (walker)
+    {
+        std::cout << "\033[2K\n\r"; // Clear the entire line and move the cursor to the beginning
+        std::cout.flush();
+        cout << current->getText() << '\r' << '\n'; // Print each line
+        walker = walker->getNext();
     }
 }
 
@@ -308,9 +256,11 @@ int main(int argc, char *argv[])
 
     resetCursor();
 
+    TextLine *current_line = head;
+
     while (1) // 24 is the code for ctrl + x1
     {
-        char c = readKey();
+        char c = readKey(current_line);
 
         if (c == 24)
             break;

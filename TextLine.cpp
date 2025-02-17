@@ -78,19 +78,26 @@ public:
         // if at the tail
         if (next == nullptr)
         {
-
             next = new_obj;
             new_obj->prev = this;
         }
+        else
+        {
+            new_obj->prev = this;       // New node’s previous points to current node
+            new_obj->next = this->next; // New node’s next points to what this->next was
+
+            this->next->prev = new_obj; // Update next node's prev pointer
+            this->next = new_obj;       // Actually insert the new node in the list
+        }
     }
 
-    
     TextLine *getNext()
     {
         return next;
     }
 
-    TextLine *getPrev(){
+    TextLine *getPrev()
+    {
         return prev;
     }
 

@@ -90,6 +90,10 @@ public:
         return next;
     }
 
+    TextLine *getPrev(){
+        return prev;
+    }
+
     ~TextLine()
     {
         delete next; // Recursively delete the next node in the linked list

@@ -23,45 +23,22 @@ struct editorConfig E; // global variable containing the state of the terminal
 const int TOP_LEFT_X = 5;
 const int TOP_LEFT_Y = 3;
 
-// text data types
-vector<char> text_vector;
-vector<string> string_vec;
-
 // unfinished
 
 void insertChar(int position, char c)
 {
-    text_vector.insert(text_vector.begin() + position, c);
 }
 
 void deleteChar(int position)
 {
-    text_vector.erase(text_vector.begin() + position);
 }
 
 void appendChar(char c)
 {
-    text_vector.push_back(c);
 }
 
 void appendString(const string &str)
 {
-    // Appends all characters from the string to the vector
-    text_vector.insert(text_vector.end(), str.begin(), str.end());
-}
-
-void cursorLineation()
-{
-    int position;
-    if (E.cx == 0)
-    {
-        position = (E.cy - TOP_LEFT_Y);
-    }
-    position = (E.cx - TOP_LEFT_X) * (E.cy - TOP_LEFT_Y);
-
-    // char buffer[20];  // A buffer large enough to hold the number (including the null terminator)
-    // int length = snprintf(buffer, sizeof(buffer), "%d", position);  // Format the integer as a string
-    // write(STDOUT_FILENO, buffer, length);  // Write the formatted string to stdout
 }
 
 void die(const char *s)
@@ -108,6 +85,7 @@ void enableRawMode()
 }
 
 /*** input ***/
+/*
 void editorMoveCursor(char key)
 {
     switch (key)
@@ -165,6 +143,38 @@ void editorMoveCursor(char key)
     // for dev
     cursorLineation();
 }
+*/
+
+void moveCursor(char key)
+{
+    switch (key)
+    {
+    case 'A': // Up arrow
+        if (E.cy > 0)
+        {
+            E.cy--;
+        }
+        break;
+    case 'B': // Down arrow
+        E.cy++;
+        break;
+    case 'C': // Right arrow
+        E.cx++;
+        break;
+    case 'D': // Left arrow
+        if (E.cx > 0)
+        {
+            E.cx--;
+        }
+        break;
+    }
+    // Sending escape sequence to terminal to move cursor
+    int display_x = E.cx + TOP_LEFT_X;
+    int display_y = E.cy + TOP_LEFT_Y;
+    char buffer[32];
+    int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", display_y, display_x); // Create the escape sequence
+    write(STDOUT_FILENO, buffer, length);
+}
 
 void printKeys(char k)
 {
@@ -186,7 +196,7 @@ void printEscapeKeys(char k)
     backspace is int 127*/
 }
 
-char editorReadKey()
+char readKey()
 {
     char buffer[3];                                         // To handle multi-byte escape sequences
     ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer)); // Read up to 3 bytes
@@ -195,40 +205,34 @@ char editorReadKey()
     {
         die("read");
     }
-
+    // Regular character
     if (n == 1)
     {
         if (buffer[0] == '\r')
         {
-            string_vec.push_back(" ");
             E.cx = 0;
-            editorMoveCursor('B');
+            // Move cursor one down
+            // moveCursor('B');
         }
         if (buffer[0] == 127)
         {
-            char space = ' ';
-            // TODO: fix the issue where a delete requires two keystrokes
+            char space = 32;
             write(STDOUT_FILENO, &space, 1);
-            editorMoveCursor('D');
-        }
-        else if (string_vec[E.cy].size() == E.cx)
-        {
-            string_vec[E.cy].push_back(buffer[0]);
-            write(STDOUT_FILENO, &buffer[0], 1);
-            editorMoveCursor('C');
+            moveCursor('D');
         }
         else
         {
             write(STDOUT_FILENO, &buffer[0], 1);
-            editorMoveCursor('C');
+
+            // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
+            E.cx++;
         }
         return buffer[0];
     }
+    // Multi-byte escape sequence (e.g., arrow keys)
     else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[')
     {
-        // Multi-byte escape sequence (e.g., arrow keys)
-        // printEscapeKeys(buffer[2]);
-        editorMoveCursor(buffer[2]);
+        moveCursor(buffer[2]);
         return buffer[2];
     }
 
@@ -262,39 +266,12 @@ void resetCursor()
     write(STDOUT_FILENO, buffer, length);
 }
 
-int openFileContents(char *file_name)
-{
-    ifstream file(file_name);
-    if (!file.is_open())
-    { // Check if the file was opened successfully
-        cerr << "Failed to open file.\n";
-        return 1;
-    }
-    string line;
-    int count = 1;
-    while (std::getline(file, line))
-    { // Read line by line
-        string_vec.push_back(line);
-        cout << std::setfill('0') << std::setw(3) << count++ << " " << line << '\r' << '\n'; // Print each line
-    }
-    cout << std::setfill('0') << std::setw(3) << count++ << " " << line << '\r' << '\n';
-    // string_vec.pop_back();
-    file.close();
-    return 0;
-}
-
 // TextLine obj printing
 void printAll(TextLine *head)
 {
-    /*for (int i = 0; i < string_vec.size(); i++)
-    {
-        printf("%s\r\n", string_vec[i].c_str());
-    }
-
-*/
     int count = 1;
     TextLine *current = head;
-    while (current != nullptr)
+    while (current)
     {
         cout << std::setfill('0') << std::setw(3) << count++ << " " << current->getText() << '\r' << '\n'; // Print each line
         current = current->getNext();
@@ -303,9 +280,9 @@ void printAll(TextLine *head)
 
 int main(int argc, char *argv[])
 {
-    // enableRawMode();
-    // refreshScreen();
-    // titleCard();
+    enableRawMode();
+    refreshScreen();
+    titleCard();
 
     ifstream file(argv[1]); // Open file
     if (!file.is_open())
@@ -318,26 +295,22 @@ int main(int argc, char *argv[])
     TextLine *head = new TextLine(file);
     file.close(); // Close the file after reading
 
-    // Print contents
-    TextLine *current = head;
-    while (current)
-    {
-        cout << current->getText() << endl;
-        current = current->getNext();
-    }
+    printAll(head);
 
-    // resetCursor();
+    resetCursor();
 
-    /*while (1) // 24 is the code for ctrl + x1
+    while (1) // 24 is the code for ctrl + x1
     {
-        char c = editorReadKey();
+        char c = readKey();
 
         if (c == 24)
             break;
     }
 
+    delete head;
+
     refreshScreen();
-    disableRawMode();*/
+    disableRawMode();
 
     return 0;
 }

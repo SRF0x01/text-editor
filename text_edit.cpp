@@ -20,7 +20,7 @@ struct editorConfig
 struct editorConfig E; // global variable containing the state of the terminal
 
 // global variable that sets the top left of a page
-const int TOP_LEFT_X = 5;
+const int TOP_LEFT_X = 0;
 const int TOP_LEFT_Y = 3;
 
 // unfinished
@@ -210,9 +210,14 @@ char readKey()
     {
         if (buffer[0] == '\r')
         {
+            write(STDOUT_FILENO, "\r\n", 2); // Ensure newline properly moves down
             E.cx = 0;
-            // Move cursor one down
-            // moveCursor('B');
+            E.cy++;
+
+            // Move the cursor to the correct new line position
+            char buffer[32];
+            int length = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", E.cy + TOP_LEFT_Y, TOP_LEFT_X);
+            write(STDOUT_FILENO, buffer, length);
         }
         if (buffer[0] == 127)
         {
@@ -273,9 +278,13 @@ void printAll(TextLine *head)
     TextLine *current = head;
     while (current)
     {
-        cout << std::setfill('0') << std::setw(3) << count++ << " " << current->getText() << '\r' << '\n'; // Print each line
+        cout << current->getText() << '\r' << '\n'; // Print each line
         current = current->getNext();
     }
+}
+
+void debugPrint(string prt)
+{
 }
 
 int main(int argc, char *argv[])

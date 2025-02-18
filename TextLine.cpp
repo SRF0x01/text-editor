@@ -60,9 +60,12 @@ public:
         // Read and create new nodes for remaining lines
         while (getline(file, line))
         {
-            current->next = new TextLine(line);
-            current->next->prev = current;
-            current = current->next; // Move current forward
+            
+            TextLine *new_line = new TextLine(line);
+            current->next = new_line;
+            new_line->prev = current;
+            //cout << current->prev << " <- prev " << "current: " << current << " text: " << current->text_line << " next -> " << current->next << "\n";
+            current = current->next;
         }
     }
 
@@ -106,60 +109,3 @@ public:
         delete next; // Recursively delete the next node in the linked list
     }
 };
-
-/*
-Example class
-
-
-#include <iostream>
-using namespace std;
-
-// Class Definition
-class MyClass {
-private:
-    // Private data members (only accessible within the class)
-    int privateData;
-
-public:
-    // Constructor (runs when an object is created)
-    MyClass(int value) {
-        privateData = value;
-        cout << "Constructor called: privateData set to " << privateData << endl;
-    }
-
-    // Public method (can be accessed outside the class)
-    void showData() {
-        cout << "Private Data: " << privateData << endl;
-    }
-
-    // Setter (modifies private data)
-    void setData(int value) {
-        privateData = value;
-    }
-
-    // Getter (returns private data)
-    int getData() {
-        return privateData;
-    }
-
-    // Destructor (runs when an object is destroyed)
-    ~MyClass() {
-        cout << "Destructor called for privateData = " << privateData << endl;
-    }
-};
-
-int main() {
-    // Creating an object of MyClass
-    MyClass obj(10);
-
-    // Accessing public methods
-    obj.showData();
-
-    // Modifying private data using setter
-    obj.setData(20);
-    cout << "Updated Data: " << obj.getData() << endl;
-
-    // Object goes out of scope here, so destructor is called
-    return 0;
-}
-*/

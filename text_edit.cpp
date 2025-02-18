@@ -10,6 +10,9 @@
 
 using namespace std;
 
+// Prototypes
+void afterCurrentPrint(TextLine *current);
+
 /** Global vars **/
 // tooling to get the size of the terminal
 struct editorConfig
@@ -86,18 +89,24 @@ void enableRawMode()
         die("tcsetattr");
 }
 
-void moveCursor(char key)
+void moveCursor(char key, TextLine *&current)
 {
     switch (key)
     {
     case 'A': // Up arrow
-        if (E.cy > 0)
+        if (current->getPrev())
         {
+            current = current->getPrev();
             E.cy--;
         }
         break;
     case 'B': // Down arrow
-        E.cy++;
+        if (current->getNext())
+        {
+            E.cy++;
+            current = current->getNext();
+        }
+
         break;
     case 'C': // Right arrow
         E.cx++;
@@ -137,7 +146,7 @@ void printEscapeKeys(char k)
     backspace is int 127*/
 }
 
-char readKey(TextLine *current)
+char readKey(TextLine *&current)
 {
     char buffer[3];                                         // To handle multi-byte escape sequences
     ssize_t n = read(STDIN_FILENO, buffer, sizeof(buffer)); // Read up to 3 bytes
@@ -149,16 +158,17 @@ char readKey(TextLine *current)
     // Regular character
     if (n == 1)
     {
+        // Insert new line
         if (buffer[0] == '\r')
         {
             E.cx = 0;
-            moveCursor('B');
+            moveCursor('B', current);
         }
         if (buffer[0] == 127)
         {
             char space = 32;
             write(STDOUT_FILENO, &space, 1);
-            moveCursor('D');
+            moveCursor('D', current);
         }
         else
         {
@@ -167,12 +177,13 @@ char readKey(TextLine *current)
             // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
             E.cx++;
         }
+
         return buffer[0];
     }
     // Multi-byte escape sequence (e.g., arrow keys)
     else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[')
     {
-        moveCursor(buffer[2]);
+        moveCursor(buffer[2], current);
         return buffer[2];
     }
 
@@ -237,20 +248,21 @@ void debugPrint(string prt)
 
 int main(int argc, char *argv[])
 {
-    enableRawMode();
-    refreshScreen();
-    titleCard();
 
+    /*** File to TextLine head ***/
     ifstream file(argv[1]); // Open file
     if (!file.is_open())
     {
         cerr << "Failed to open file.\n";
         return 1; // Exit if file cannot be opened
     }
-
     // Create the head of the linked list
     TextLine *head = new TextLine(file);
     file.close(); // Close the file after reading
+
+    enableRawMode();
+    refreshScreen();
+    titleCard();
 
     printAll(head);
 
@@ -266,11 +278,14 @@ int main(int argc, char *argv[])
             break;
     }
 
-    delete head;
+    
 
     refreshScreen();
     disableRawMode();
 
+    printAll(head);
+
+    delete head;
     return 0;
 }
 

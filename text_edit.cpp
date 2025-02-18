@@ -155,16 +155,18 @@ char readKey(TextLine *&current)
             char space = 32;
             write(STDOUT_FILENO, &space, 1);
             current->deleteChar(E.cx);
+            printLine(current);
             moveCursor('D', current);
+
         }
         else
         {
             write(STDOUT_FILENO, &buffer[0], 1);
             current->insertChar(E.cx, buffer[0]);
-            printLine(current);
 
             // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
             E.cx++;
+            printLine(current);
         }
 
         return buffer[0];
@@ -233,8 +235,8 @@ void afterCurrentPrint(TextLine *current)
 
 void printLine(TextLine *current){
     std::cout << "\033[2K\r";
-    cout << current->getText() << flush;
-    std::cout << "\033[" << E.cx + 1 << "G" << flush; 
+    cout << current->getText();
+    std::cout << "\033[" << E.cx << "G" << flush; 
 }
 
 void debugPrint(string prt)

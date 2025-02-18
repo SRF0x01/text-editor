@@ -115,7 +115,7 @@ public:
             text_line.pop_back();
         }
         else{
-            text_line.erase(pos,pos+1);
+            text_line.erase(pos,1);
         }
 
     }

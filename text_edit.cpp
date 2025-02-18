@@ -28,11 +28,6 @@ const int TOP_LEFT_Y = 3;
 
 // unfinished
 
-void insertChar(int position, char c, TextLine *&current)
-{
-    current->setChar(position, c);
-}
-
 void deleteChar(int position)
 {
 }
@@ -103,10 +98,12 @@ void moveCursor(char key, TextLine *&current)
             E.cy++;
             current = current->getNext();
         }
-
         break;
     case 'C': // Right arrow
-        E.cx++;
+        if (E.cx < current->getText().length())
+        {
+            E.cx++;
+        }
         break;
     case 'D': // Left arrow
         if (E.cx > 0)
@@ -168,11 +165,13 @@ char readKey(TextLine *&current)
         {
             char space = 32;
             write(STDOUT_FILENO, &space, 1);
+            current->setChar(E.cx, ' ');
             moveCursor('D', current);
         }
         else
         {
             write(STDOUT_FILENO, &buffer[0], 1);
+            current->setChar(E.cx, buffer[0]);
 
             // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
             E.cx++;

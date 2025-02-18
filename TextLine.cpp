@@ -98,9 +98,9 @@ public:
         text_line = line;
     }
 
-    void setChar(int pos, char c)
+    void insertChar(int pos, char c)
     {
-        if (pos >= text_line.size())
+        if (pos > text_line.size())
         {
             text_line.push_back(c);
         }
@@ -108,6 +108,16 @@ public:
         {
             text_line.insert(text_line.begin() + pos, c);
         }
+    }
+
+    void deleteChar(int pos){
+        if(pos > text_line.size()){
+            text_line.pop_back();
+        }
+        else{
+            text_line.erase(pos,pos+1);
+        }
+
     }
 
     TextLine *getNext()

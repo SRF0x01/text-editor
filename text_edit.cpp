@@ -12,6 +12,7 @@ using namespace std;
 
 // Prototypes
 void afterCurrentPrint(TextLine *current);
+void printLine(TextLine *current);
 
 /** Global vars **/
 // tooling to get the size of the terminal
@@ -25,18 +26,6 @@ struct editorConfig E; // global variable containing the state of the terminal
 // global variable that sets the top left of a page
 const int TOP_LEFT_X = 1;
 const int TOP_LEFT_Y = 3;
-
-// unfinished
-
-void deleteChar(int position)
-{
-}
-
-void appendLine(TextLine *current)
-{
-    current->setNext("");
-    afterCurrentPrint(current);
-}
 
 void die(const char *s)
 {
@@ -165,13 +154,14 @@ char readKey(TextLine *&current)
         {
             char space = 32;
             write(STDOUT_FILENO, &space, 1);
-            current->setChar(E.cx, ' ');
+            current->deleteChar(E.cx);
             moveCursor('D', current);
         }
         else
         {
             write(STDOUT_FILENO, &buffer[0], 1);
-            current->setChar(E.cx, buffer[0]);
+            current->insertChar(E.cx, buffer[0]);
+            printLine(current);
 
             // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
             E.cx++;
@@ -238,6 +228,13 @@ void afterCurrentPrint(TextLine *current)
         cout << walker->getText() << '\r' << '\n'; // Print each line
         walker = walker->getNext();
     }
+    // No need to free walker because it ends as a nullptr
+}
+
+void printLine(TextLine *current){
+    std::cout << "\033[2K\r";
+    cout << current->getText() << flush;
+    std::cout << "\033[" << E.cx + 1 << "G" << flush; 
 }
 
 void debugPrint(string prt)

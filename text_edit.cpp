@@ -155,9 +155,9 @@ char readKey(TextLine *&current)
             char space = 32;
             write(STDOUT_FILENO, &space, 1);
             current->deleteChar(E.cx);
+            // printLine(current);
             printLine(current);
             moveCursor('D', current);
-
         }
         else
         {
@@ -184,7 +184,7 @@ char readKey(TextLine *&current)
 
 void titleCard()
 {
-    printf("------- S.T.E 1.0.0-alpha (ctrl + x to exit) -------\r\n");
+    printf("------- (ctrl + x to exit) -------\r\n");
     fflush(stdout);
 }
 
@@ -218,7 +218,7 @@ void printAll(TextLine *head)
         current = current->getNext();
     }
 
-    // No need to delete head because it ends as a null pointer
+    // No need to delete current because it ends as a null pointer
 }
 
 void afterCurrentPrint(TextLine *current)
@@ -233,10 +233,11 @@ void afterCurrentPrint(TextLine *current)
     // No need to free walker because it ends as a nullptr
 }
 
-void printLine(TextLine *current){
+void printLine(TextLine *current)
+{
     std::cout << "\033[2K\r";
     cout << current->getText();
-    std::cout << "\033[" << E.cx << "G" << flush; 
+    std::cout << "\033[" << E.cx << "G" << flush;
 }
 
 void debugPrint(string prt)

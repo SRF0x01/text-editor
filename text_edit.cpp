@@ -28,15 +28,12 @@ const int TOP_LEFT_Y = 3;
 
 // unfinished
 
-void insertChar(int position, char c)
+void insertChar(int position, char c, TextLine *&current)
 {
+    current->setChar(position, c);
 }
 
 void deleteChar(int position)
-{
-}
-
-void appendChar(char c)
 {
 }
 
@@ -162,6 +159,9 @@ char readKey(TextLine *&current)
         if (buffer[0] == '\r')
         {
             E.cx = 0;
+            // create a new line
+            current->setNext("");
+            afterCurrentPrint(current);
             moveCursor('B', current);
         }
         if (buffer[0] == 127)
@@ -235,9 +235,8 @@ void afterCurrentPrint(TextLine *current)
     TextLine *walker = current;
     while (walker)
     {
-        std::cout << "\033[2K\n\r"; // Clear the entire line and move the cursor to the beginning
-        std::cout.flush();
-        cout << current->getText() << '\r' << '\n'; // Print each line
+        std::cout << "\033[2K";                    // Clear the entire line and move the cursor to the beginning
+        cout << walker->getText() << '\r' << '\n'; // Print each line
         walker = walker->getNext();
     }
 }
@@ -260,6 +259,7 @@ int main(int argc, char *argv[])
     TextLine *head = new TextLine(file);
     file.close(); // Close the file after reading
 
+    /*** Setting terminal to raw mode ***/
     enableRawMode();
     refreshScreen();
     titleCard();
@@ -277,8 +277,6 @@ int main(int argc, char *argv[])
         if (c == 24)
             break;
     }
-
-    
 
     refreshScreen();
     disableRawMode();

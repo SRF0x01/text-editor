@@ -60,18 +60,13 @@ public:
         // Read and create new nodes for remaining lines
         while (getline(file, line))
         {
-            
+
             TextLine *new_line = new TextLine(line);
             current->next = new_line;
             new_line->prev = current;
-            //cout << current->prev << " <- prev " << "current: " << current << " text: " << current->text_line << " next -> " << current->next << "\n";
+            // cout << current->prev << " <- prev " << "current: " << current << " text: " << current->text_line << " next -> " << current->next << "\n";
             current = current->next;
         }
-    }
-
-    string getText()
-    {
-        return text_line;
     }
 
     void setNext(string new_line)
@@ -91,6 +86,27 @@ public:
 
             this->next->prev = new_obj; // Update next node's prev pointer
             this->next = new_obj;       // Actually insert the new node in the list
+        }
+    }
+    string getText()
+    {
+        return text_line;
+    }
+
+    void setText(string line)
+    {
+        text_line = line;
+    }
+
+    void setChar(int pos, char c)
+    {
+        if (pos >= text_line.size())
+        {
+            text_line.push_back(c);
+        }
+        else
+        {
+            text_line.insert(text_line.begin() + pos, c);
         }
     }
 

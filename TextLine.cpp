@@ -2,7 +2,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
-#include <iostream>
 #include <unistd.h>
 #include <iostream>
 #include <fstream>

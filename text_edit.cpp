@@ -7,6 +7,25 @@
 #include <iostream>
 #include <fstream>
 #include "TextLine.cpp"
+#include <ctime>
+
+void logMessage(const std::string &message)
+{
+    std::ofstream logFile("program.log", std::ios::app); // Append mode
+    if (!logFile)
+    {
+        std::cerr << "Error opening log file!" << std::endl;
+        return;
+    }
+
+    // Get current time
+    std::time_t now = std::time(nullptr);
+    char timeStr[20];
+    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    logFile << "[" << timeStr << "] " << message << std::endl;
+    logFile.close();
+}
 
 using namespace std;
 
@@ -148,26 +167,32 @@ char readKey(TextLine *&current)
             // create a new line
             current->setNext("");
             afterCurrentPrint(current);
+
+            // moving cursor one down fixes the logical position of the cursor and sets the cursor
             moveCursor('B', current);
         }
         if (buffer[0] == 127)
         {
             char space = 32;
-            write(STDOUT_FILENO, &space, 1);
+            // write(STDOUT_FILENO, &space, 1);
             current->deleteChar(E.cx);
-            // printLine(current);
+            if (E.cx > 0)
+            {
+                E.cx--;
+            }
             printLine(current);
-            moveCursor('D', current);
+            // moveCursor('D', current);
         }
         else
         {
-            write(STDOUT_FILENO, &buffer[0], 1);
+            // write(STDOUT_FILENO, &buffer[0], 1);
             current->insertChar(E.cx, buffer[0]);
 
             // Even in raw mode the cursor will move one over for write, add one to the E.cx to reflect this
             E.cx++;
             printLine(current);
         }
+        logMessage("E.cx: " + to_string(E.cx) + " E.cy: " + to_string(E.cy));
 
         return buffer[0];
     }
@@ -175,7 +200,9 @@ char readKey(TextLine *&current)
     else if (n == 3 && buffer[0] == '\033' && buffer[1] == '[')
     {
         moveCursor(buffer[2], current);
+        logMessage("E.cx: " + to_string(E.cx) + " E.cy: " + to_string(E.cy));
         return buffer[2];
+
     }
 
     // Default return if unknown input
@@ -235,6 +262,8 @@ void afterCurrentPrint(TextLine *current)
 
 void printLine(TextLine *current)
 {
+    // make it more low level and print each character after E.cx on the line
+    // Does not move the cursor
     std::cout << "\033[2K\r";
     cout << current->getText();
     std::cout << "\033[" << E.cx << "G" << flush;
@@ -271,7 +300,10 @@ int main(int argc, char *argv[])
 
     while (1) // 24 is the code for ctrl + x1
     {
+
         char c = readKey(current_line);
+
+        
 
         if (c == 24)
             break;

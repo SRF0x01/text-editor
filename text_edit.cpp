@@ -202,7 +202,6 @@ char readKey(TextLine *&current)
         moveCursor(buffer[2], current);
         logMessage("E.cx: " + to_string(E.cx) + " E.cy: " + to_string(E.cy));
         return buffer[2];
-
     }
 
     // Default return if unknown input
@@ -302,8 +301,6 @@ int main(int argc, char *argv[])
     {
 
         char c = readKey(current_line);
-
-        
 
         if (c == 24)
             break;
